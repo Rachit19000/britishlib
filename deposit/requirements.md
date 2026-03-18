@@ -37,47 +37,4 @@ node .\deposit\backend.js
 
 It listens on `http://localhost:7001`.
 
-### 2) Open the frontend
-
-Open this file in a browser:
-
-- `deposit/frontend.html`
-
-If your browser blocks cross-origin requests from `file://`, use a simple local static server:
-
-```powershell
-python -m http.server 5173
-```
-
-Then open:
-
-- `http://localhost:5173/deposit/frontend.html`
-
-## Demo accounts
-
-Backend seeds a demo staff user:
-
-- **email**: `staff@bl.uk`
-- **password**: `staff-password`
-- **TOTP secret (Base32)**: `JBSWY3DPEHPK3PXP`
-
-The UI also shows the backend-provided `demoTotpNow` during login for convenience.
-
-## API quick reference
-
-- `POST /api/register`
-- `GET /api/staff/registration-requests` (staff)
-- `POST /api/staff/registration-requests/decide` (staff)
-- `POST /api/auth/login`
-- `POST /api/auth/mfa`
-- `POST /api/submissions` (publisher/staff)
-- `GET /api/submissions` (publisher/staff)
-- `GET /api/staff/workflow-tasks` (staff)
-- `POST /api/staff/workflow-tasks/decide` (staff)
-
-## Notes / next steps
-
-- Storage is in-memory (restart resets data). For the real stack, swap in **Spring Boot + PostgreSQL + Redis** as per the architecture doc.
-- File storage is represented by uploaded bytes + hash; real solution would stream to object storage (S3/MinIO) and store URLs.
-- Virus scanning, ONIX→MARC conversion, and staff email notifications are out-of-scope for this 3-file prototype.
 
