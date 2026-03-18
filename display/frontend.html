@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ELDROS CDP (Display) - Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #07110b;
+        --panel: #0b1c13;
+        --text: #eafff3;
+        --muted: #bfe7d1;
+        --accent: #44d19d;
+        --accent2: #7aa2ff;
+        --danger: #ff6b6b;
+        --border: rgba(255, 255, 255, 0.12);
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        background: radial-gradient(1000px 650px at 15% -10%, rgba(68, 209, 157, 0.3), transparent 55%),
+          radial-gradient(900px 600px at 85% -20%, rgba(122, 162, 255, 0.28), transparent 60%), var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        background: rgba(7, 17, 11, 0.75);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 16px;
+      }
+      header p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 18px 16px 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .card {
+        background: rgba(11, 28, 19, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 170px 1fr;
+        gap: 10px;
+        align-items: center;
+        margin: 8px 0;
+      }
+      label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text);
+        outline: none;
+      }
+      button {
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(68, 209, 157, 0.25), rgba(122, 162, 255, 0.18));
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .danger {
+        color: var(--danger);
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid var(--border);
+        padding: 10px;
+        border-radius: 12px;
+        color: #d8fff0;
+        font-size: 12px;
+      }
+      .full {
+        grid-column: 1 / -1;
+      }
+      .contentViewer {
+        border: 1px dashed rgba(255, 255, 255, 0.22);
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.18);
+      }
+      @media (max-width: 920px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ELDROS — Content Display Portal (Display) Prototype</h1>
+      <p>
+        Minimal single-file frontend. Talks to <span class="pill">CDP backend</span> on
+        <span class="pill">http://localhost:7002</span>. Access is <span class="pill">IP-restricted</span> (default allows
+        localhost).
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>1) Terminal Context (Library Location)</h2>
+        <div class="row">
+          <label for="locationId">Library location ID</label>
+          <input id="locationId" value="reading-room-a" />
+        </div>
+        <div class="row">
+          <label for="userLabel">User label</label>
+          <input id="userLabel" value="guest-1" />
+        </div>
+        <p class="muted">
+          Concurrency rule is enforced per <span class="pill">contentId + locationId</span>. Try opening this page in two
+          browser windows with the same locationId and viewing the same item to see <span class="pill">turnaway</span>.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>2) Search</h2>
+        <div class="row">
+          <label for="q">Query</label>
+          <input id="q" placeholder="title / isbn / publisher" />
+        </div>
+        <div class="row">
+          <label for="type">Content type</label>
+          <select id="type">
+            <option value="">All</option>
+            <option value="book">Book</option>
+            <option value="journal">Journal</option>
+            <option value="music">Music</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <button id="btnSearch">Search</button>
+        <p class="muted">This prototype searches in-memory metadata (real system uses Elasticsearch/Solr).</p>
+      </section>
+
+      <section class="card full">
+        <h2>3) View Content (Concurrency + Turnaway)</h2>
+        <div class="row">
+          <label for="contentId">Content ID</label>
+          <input id="contentId" placeholder="cnt_demo_1" value="cnt_demo_1" />
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <button id="btnLoadMeta">Load metadata</button>
+          <button id="btnStartView">Start viewing</button>
+          <button id="btnEndView">End viewing</button>
+        </div>
+        <div class="contentViewer" style="margin-top: 10px">
+          <div class="muted" id="viewStatus">No active viewing session.</div>
+          <div style="height: 8px"></div>
+          <div id="viewer"></div>
+        </div>
+        <p class="muted">
+          Real CDP would stream PDFs via PDF.js and ePubs via epub.js using signed URLs. Here we display placeholder text.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>4) Analytics (dev)</h2>
+        <button id="btnAnalytics">Show analytics summary</button>
+        <p class="muted">Counts search/view/turnaway events captured by backend.</p>
+      </section>
+
+      <section class="card full">
+        <h2>Output</h2>
+        <div id="status" class="muted"></div>
+        <pre id="out">{}</pre>
+      </section>
+    </main>
+
+    <script>
+      const API = "http://localhost:7002";
+      let activeSession = null; // { contentId, sessionId }
+
+      const out = document.getElementById("out");
+      const statusEl = document.getElementById("status");
+      const viewer = document.getElementById("viewer");
+      const viewStatus = document.getElementById("viewStatus");
+
+      function getCtxHeaders() {
+        return {
+          "x-library-location": document.getElementById("locationId").value.trim() || "default",
+          "x-user-label": document.getElementById("userLabel").value.trim() || "guest",
+        };
+      }
+
+      function setStatus(msg, danger) {
+        statusEl.textContent = msg;
+        statusEl.className = "muted " + (danger ? "danger" : "");
+      }
+
+      function show(obj) {
+        out.textContent = JSON.stringify(obj, null, 2);
+      }
+
+      async function api(path, opts = {}) {
+        const headers = Object.assign({ "content-type": "application/json" }, getCtxHeaders(), opts.headers || {});
+        const res = await fetch(`${API}${path}`, { ...opts, headers });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw Object.assign(new Error(data?.message || "Request failed"), { status: res.status, data });
+        return data;
+      }
+
+      document.getElementById("btnSearch").onclick = async () => {
+        try {
+          setStatus("Searching...", false);
+          const q = encodeURIComponent(document.getElementById("q").value.trim());
+          const type = encodeURIComponent(document.getElementById("type").value);
+          const data = await api(`/api/search?q=${q}&type=${type}`, { method: "GET", headers: getCtxHeaders() });
+          setStatus(`Found ${data.total} item(s).`, false);
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, true);
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnLoadMeta").onclick = async () => {
+        try {
+          setStatus("Loading metadata...", false);
+          const contentId = document.getElementById("contentId").value.trim();
+          const data = await api(`/api/content/${encodeURIComponent(contentId)}`, { method: "GET" });
+          setStatus("Metadata loaded.", false);
+          viewer.innerHTML = `<div><b>${escapeHtml(data.item.title)}</b> <span class="pill">${escapeHtml(
+            data.item.contentType
+          )}</span></div>
+          <div class="muted">Publisher: ${escapeHtml(data.item.publisher)} · ISBN: ${escapeHtml(
+            data.item.isbn
+          )} · File: ${escapeHtml(data.item.fileType)}</div>`;
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, true);
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnStartView").onclick = async () => {
+        try {
+          setStatus("Starting viewing session...", false);
+          const contentId = document.getElementById("contentId").value.trim();
+          const data = await api("/api/view/start", { method: "POST", body: JSON.stringify({ contentId }) });
+          activeSession = { contentId, sessionId: data.sessionId };
+          viewStatus.textContent = `Viewing started. Session: ${data.sessionId}`;
+          startHeartbeat();
+          setStatus("Viewing granted (lock acquired).", false);
+          // Load and show placeholder body text
+          const meta = await api(`/api/content/${encodeURIComponent(contentId)}`, { method: "GET" });
+          viewer.innerHTML = `<div><b>${escapeHtml(meta.item.title)}</b></div>
+          <div class="muted">Simulated viewer output:</div>
+          <div style="height:8px"></div>
+          <div>${escapeHtml(meta.item.bodyText)}</div>`;
+          show({ start: data, item: meta.item });
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, true);
+          if (e.data?.error === "turnaway") {
+            viewStatus.textContent = `Turnaway: locked by ${e.data.lockedBy}. Retry after ~${e.data.retryAfterSeconds}s.`;
+          }
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnEndView").onclick = async () => {
+        try {
+          if (!activeSession) throw new Error("No active session");
+          setStatus("Ending viewing session...", false);
+          const data = await api("/api/view/end", {
+            method: "POST",
+            body: JSON.stringify({ contentId: activeSession.contentId, sessionId: activeSession.sessionId }),
+          });
+          activeSession = null;
+          viewStatus.textContent = "No active viewing session.";
+          setStatus("Viewing ended (lock released).", false);
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, true);
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnAnalytics").onclick = async () => {
+        try {
+          setStatus("Loading analytics summary...", false);
+          const data = await api("/api/analytics/summary", { method: "GET" });
+          setStatus("Analytics loaded.", false);
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, true);
+          show(e.data || { error: e.message });
+        }
+      };
+
+      function escapeHtml(s) {
+        return String(s || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      let hbTimer = null;
+      function startHeartbeat() {
+        if (hbTimer) clearInterval(hbTimer);
+        hbTimer = setInterval(async () => {
+          if (!activeSession) return;
+          try {
+            await api("/api/view/heartbeat", {
+              method: "POST",
+              body: JSON.stringify({ contentId: activeSession.contentId, sessionId: activeSession.sessionId }),
+            });
+          } catch {
+            // If heartbeat fails, just stop.
+            activeSession = null;
+            viewStatus.textContent = "Session expired.";
+            clearInterval(hbTimer);
+            hbTimer = null;
+          }
+        }, 20_000);
+      }
+
+      // Initial probe
+      (async () => {
+        try {
+          const health = await fetch(`${API}/health`).then((r) => r.json());
+          setStatus(`Backend reachable: ${health.service} @ ${health.time}`, false);
+          show(health);
+        } catch {
+          setStatus("Backend not reachable yet. Start display/backend.js first.", true);
+          show({ hint: "Run: node display/backend.js" });
+        }
+      })();
+    </script>
+  </body>
+</html>
+

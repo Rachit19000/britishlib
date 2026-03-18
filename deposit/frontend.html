@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ELDROS PSP (Deposit) - Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #0b1220;
+        --panel: #101a33;
+        --text: #e9eefc;
+        --muted: #b7c4ef;
+        --accent: #7aa2ff;
+        --danger: #ff6b6b;
+        --ok: #44d19d;
+        --border: rgba(255, 255, 255, 0.12);
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        background: radial-gradient(1000px 600px at 20% -10%, rgba(122, 162, 255, 0.35), transparent 60%),
+          radial-gradient(900px 500px at 80% 0%, rgba(68, 209, 157, 0.25), transparent 55%), var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        background: rgba(11, 18, 32, 0.75);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+      header p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 18px 16px 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .card {
+        background: rgba(16, 26, 51, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 10px;
+        align-items: center;
+        margin: 8px 0;
+      }
+      label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text);
+        outline: none;
+      }
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+      button {
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(122, 162, 255, 0.25), rgba(68, 209, 157, 0.18));
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .danger {
+        color: var(--danger);
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid var(--border);
+        padding: 10px;
+        border-radius: 12px;
+        color: #d8e2ff;
+        font-size: 12px;
+      }
+      .full {
+        grid-column: 1 / -1;
+      }
+      @media (max-width: 920px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ELDROS — Publisher Submissions Portal (Deposit) Prototype</h1>
+      <p>
+        Minimal single-file frontend. Talks to <span class="pill">PSP backend</span> on
+        <span class="pill">http://localhost:7001</span>. Demo staff user: <span class="pill">staff@bl.uk</span>
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>1) Registration Request (Guest)</h2>
+        <div class="row">
+          <label for="regPublisher">Publisher name</label>
+          <input id="regPublisher" placeholder="Example Publishing Ltd" />
+        </div>
+        <div class="row">
+          <label for="regEmail">Contact email</label>
+          <input id="regEmail" placeholder="publisher@example.com" />
+        </div>
+        <button id="btnRegister">Submit registration request</button>
+        <p class="muted">
+          Staff will approve/reject this request. If approved, the backend returns a temp password + an MFA secret for the
+          publisher user (prototype convenience).
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>2) Login (Publisher / Staff) with MFA</h2>
+        <div class="row">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" placeholder="staff@bl.uk" value="staff@bl.uk" />
+        </div>
+        <div class="row">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="staff-password" value="staff-password" />
+        </div>
+        <div class="row">
+          <label for="loginTotp">TOTP code (if prompted)</label>
+          <input id="loginTotp" placeholder="6 digits" />
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <button id="btnLogin">Login</button>
+          <button id="btnMfa">Submit MFA</button>
+          <button id="btnLogout">Logout</button>
+        </div>
+        <p class="muted">
+          Prototype behavior: after login step 1, backend returns <span class="pill">demoTotpNow</span> to help you proceed.
+        </p>
+      </section>
+
+      <section class="card full">
+        <h2>3) Publisher Submission (Upload metadata + file)</h2>
+        <div class="row">
+          <label for="subIsbn">ISBN</label>
+          <input id="subIsbn" placeholder="9780000000000" />
+        </div>
+        <div class="row">
+          <label for="subTitle">Title</label>
+          <input id="subTitle" placeholder="My Deposited Book" />
+        </div>
+        <div class="row">
+          <label for="subType">Content type</label>
+          <select id="subType">
+            <option value="book">Book</option>
+            <option value="journal">Journal</option>
+            <option value="music">Music</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="subMetadata">Metadata (JSON)</label>
+          <textarea id="subMetadata">{ "source": "MARC21", "language": "en" }</textarea>
+        </div>
+        <div class="row">
+          <label for="subFile">File</label>
+          <input id="subFile" type="file" />
+        </div>
+        <button id="btnSubmit">Submit</button>
+        <p class="muted">
+          Duplicate/versioning: submit again with the same ISBN to create a new version. Trusted publishers auto-approve.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>4) Staff Review</h2>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <button id="btnListReg">List registration requests</button>
+          <button id="btnListTasks">List workflow tasks</button>
+        </div>
+        <div class="row">
+          <label for="approveRegId">Approve reg request ID</label>
+          <input id="approveRegId" placeholder="reg_..." />
+        </div>
+        <div class="row">
+          <label for="approveRegTrusted">Trusted?</label>
+          <select id="approveRegTrusted">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+        <button id="btnApproveReg">Approve registration</button>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 12px 0" />
+
+        <div class="row">
+          <label for="decideTaskId">Decide task ID</label>
+          <input id="decideTaskId" placeholder="tsk_..." />
+        </div>
+        <div class="row">
+          <label for="decideTaskApprove">Decision</label>
+          <select id="decideTaskApprove">
+            <option value="true">Approve</option>
+            <option value="false">Reject</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="decideTaskComments">Comments</label>
+          <input id="decideTaskComments" placeholder="Optional" />
+        </div>
+        <button id="btnDecideTask">Submit decision</button>
+      </section>
+
+      <section class="card">
+        <h2>5) My submissions</h2>
+        <button id="btnMySubs">Refresh</button>
+        <p class="muted">Requires login.</p>
+      </section>
+
+      <section class="card full">
+        <h2>Output</h2>
+        <div id="status" class="muted"></div>
+        <pre id="out">{}</pre>
+      </section>
+    </main>
+
+    <script>
+      const API = "http://localhost:7001";
+      let token = "";
+
+      const out = document.getElementById("out");
+      const statusEl = document.getElementById("status");
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg;
+        statusEl.className = "muted " + (kind === "ok" ? "ok" : kind === "danger" ? "danger" : "");
+      }
+
+      function show(obj) {
+        out.textContent = JSON.stringify(obj, null, 2);
+      }
+
+      async function api(path, opts = {}) {
+        const headers = Object.assign({ "content-type": "application/json" }, opts.headers || {});
+        if (token) headers.authorization = `Bearer ${token}`;
+        const res = await fetch(`${API}${path}`, { ...opts, headers });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw Object.assign(new Error(data?.message || "Request failed"), { status: res.status, data });
+        return data;
+      }
+
+      document.getElementById("btnRegister").onclick = async () => {
+        try {
+          setStatus("Submitting registration request...", "muted");
+          const publisherName = document.getElementById("regPublisher").value.trim();
+          const email = document.getElementById("regEmail").value.trim();
+          const data = await api("/api/register", { method: "POST", body: JSON.stringify({ publisherName, email }) });
+          setStatus("Registration request submitted.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnLogin").onclick = async () => {
+        try {
+          setStatus("Logging in...", "muted");
+          const email = document.getElementById("loginEmail").value.trim();
+          const password = document.getElementById("loginPassword").value;
+          const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+          if (data.token) {
+            token = data.token;
+            setStatus("Logged in (no MFA).", "ok");
+          } else {
+            setStatus("MFA required. Enter code then click 'Submit MFA'.", "muted");
+          }
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnMfa").onclick = async () => {
+        try {
+          setStatus("Submitting MFA...", "muted");
+          const email = document.getElementById("loginEmail").value.trim();
+          const code = document.getElementById("loginTotp").value.trim();
+          const data = await api("/api/auth/mfa", { method: "POST", body: JSON.stringify({ email, code }) });
+          token = data.token;
+          setStatus("Logged in (MFA complete).", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnLogout").onclick = async () => {
+        token = "";
+        setStatus("Logged out.", "muted");
+        show({ ok: true });
+      };
+
+      document.getElementById("btnSubmit").onclick = async () => {
+        try {
+          setStatus("Submitting content...", "muted");
+          const isbn = document.getElementById("subIsbn").value.trim();
+          const title = document.getElementById("subTitle").value.trim();
+          const contentType = document.getElementById("subType").value;
+          let metadata = {};
+          try {
+            metadata = JSON.parse(document.getElementById("subMetadata").value || "{}");
+          } catch {
+            metadata = { raw: document.getElementById("subMetadata").value };
+          }
+          const fileEl = document.getElementById("subFile");
+          const f = fileEl.files[0];
+          if (!f) throw new Error("Choose a file first");
+          const fileBytes = new Uint8Array(await f.arrayBuffer());
+          const fileBytesBase64 = btoa(String.fromCharCode(...fileBytes));
+          const data = await api("/api/submissions", {
+            method: "POST",
+            body: JSON.stringify({ isbn, title, contentType, metadata, fileName: f.name, fileBytesBase64 }),
+          });
+          setStatus("Submission created.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnListReg").onclick = async () => {
+        try {
+          setStatus("Fetching registration requests...", "muted");
+          const data = await api("/api/staff/registration-requests");
+          setStatus("Done.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnApproveReg").onclick = async () => {
+        try {
+          setStatus("Approving registration...", "muted");
+          const requestId = document.getElementById("approveRegId").value.trim();
+          const trusted = document.getElementById("approveRegTrusted").value === "true";
+          const data = await api("/api/staff/registration-requests/decide", {
+            method: "POST",
+            body: JSON.stringify({ requestId, approve: true, trusted }),
+          });
+          setStatus("Approved.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnListTasks").onclick = async () => {
+        try {
+          setStatus("Fetching workflow tasks...", "muted");
+          const data = await api("/api/staff/workflow-tasks");
+          setStatus("Done.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnDecideTask").onclick = async () => {
+        try {
+          setStatus("Submitting decision...", "muted");
+          const taskId = document.getElementById("decideTaskId").value.trim();
+          const approve = document.getElementById("decideTaskApprove").value === "true";
+          const comments = document.getElementById("decideTaskComments").value;
+          const data = await api("/api/staff/workflow-tasks/decide", {
+            method: "POST",
+            body: JSON.stringify({ taskId, approve, comments }),
+          });
+          setStatus("Decision saved.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      document.getElementById("btnMySubs").onclick = async () => {
+        try {
+          setStatus("Fetching submissions...", "muted");
+          const data = await api("/api/submissions");
+          setStatus("Done.", "ok");
+          show(data);
+        } catch (e) {
+          setStatus(`Error (${e.status || ""}): ${e.message}`, "danger");
+          show(e.data || { error: e.message });
+        }
+      };
+
+      // Initial probe
+      (async () => {
+        try {
+          const health = await fetch(`${API}/health`).then((r) => r.json());
+          setStatus(`Backend reachable: ${health.service} @ ${health.time}`, "ok");
+          show(health);
+        } catch {
+          setStatus("Backend not reachable yet. Start deposit/backend.js first.", "danger");
+          show({ hint: "Run: node deposit/backend.js" });
+        }
+      })();
+    </script>
+  </body>
+</html>
+
