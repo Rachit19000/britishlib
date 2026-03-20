@@ -161,6 +161,3 @@ python -m http.server 5173
 
 Then navigate to `http://localhost:5173/deposit/frontend.html`.
 
-## Notes
-
-- This is a minimal prototype; production will use Spring Boot + React + PostgreSQL.
