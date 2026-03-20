@@ -1,30 +1,80 @@
-# Display (Readers) — CDP Prototype (3 files)
+# Display (Readers) — CDP Requirements + Prototype Notes
 
 This folder contains a **minimal runnable prototype** for the **Content Display Portal (CDP)** described in:
-
 - `requitrements/PROJECT_SUMMARY.md`
-- `requitrements/TECH_STACK_ARCHITECTURE.md` (see “Content Display Flow” and “Concurrency Control Service”)
+- `requitrements/TECH_STACK_ARCHITECTURE.md`
 
 It is intentionally implemented as **only 3 files**:
-
 - `frontend.html` — single-file UI for search + view + turnaway demo
 - `backend.js` — single-file Node.js API server (in-memory data)
-- `requirements.md` — this file
+- `requirements.md` — this file (this doc)
 
-## What’s implemented (mapped to requirements)
+## Actors & Access Rules
 
-- **IP-based access control**
-  - CDP endpoints are restricted to allowlisted IPs (prototype uses exact match)
-  - Default allowlist permits localhost only
-- **Search**
-  - Metadata search across title / ISBN / publisher
-  - Filter by content type
-- **View + concurrency control (turnaway)**
-  - “One person per library location can view each content item at a time”
-  - Lock key = `contentId + locationId`
-  - Lock TTL + heartbeat extension
-- **Analytics (prototype)**
-  - Tracks search / view_start / view_end / turnaway counts
+- **Library visitor (guest)**:
+  - May access CDP only from **approved library terminals**.
+  - Access control is **IP-based** (prototype uses exact IP match).
+- **Logged-in users** (future):
+  - May use personalization features (bookmarks, saved searches).
+  - Not implemented in the 3-file prototype.
+- **Library staff / catalog staff** (future):
+  - May view content without concurrency restrictions.
+  - Not implemented in the prototype.
+
+## Content Display Requirements
+
+### 1) IP-based Access Control
+
+CDP endpoints must be restricted to allowlisted IPs.
+- Default: allow `127.0.0.1` and `::1` in the prototype.
+- Real system: allowlist can include CIDRs and should log access denials.
+
+Prototype notes:
+- Implemented in `display/backend.js` via `ALLOWED_IPS` and an IP check function.
+
+### 2) Content Search
+
+CDP must provide metadata search across the catalog:
+- Search across fields (prototype models: title / ISBN / publisher).
+- Filter by content type (books / journals / music / other material).
+
+Prototype notes:
+- In the current prototype, search is in-memory and returns seeded catalog entries.
+
+### 3) View + Concurrency Control ("Turnaway")
+
+Requirement:
+- Only **one person per library location** can view the same **content item** at a time.
+
+Rules:
+- Lock key must include both:
+  - `contentId`
+  - `locationId` (library terminal / reading room identifier)
+- When a second viewer tries to acquire the lock:
+  - return a **turnaway** response
+
+Prototype notes:
+- Implemented in-memory with a lock TTL.
+- The prototype includes a simple turnaway UI flow.
+
+### 4) Analytics / Reporting Signals
+
+CDP must capture usage signals:
+- Search events
+- View start / view end
+- Turnaway counts
+
+Prototype notes:
+- Implemented in-memory analytics array with route-level event logging.
+
+## Content Catalog & Formats
+
+Real system expectations:
+- Content can be stored as PDF/ePub and streamed/served to the browser.
+- Searches are backed by a proper search index (Elasticsearch/Solr).
+
+Prototype notes:
+- The prototype does not stream real files; it demonstrates view/search/concurrency with placeholder content.
 
 ## Run locally (Windows / PowerShell)
 
@@ -41,7 +91,6 @@ It listens on `http://localhost:7002`.
 ### 2) Open the frontend
 
 Open this file in a browser:
-
 - `display/frontend.html`
 
 If your browser blocks cross-origin requests from `file://`, use a simple local static server:
@@ -51,13 +100,11 @@ python -m http.server 5173
 ```
 
 Then open:
-
 - `http://localhost:5173/display/frontend.html`
 
 ## IP allowlisting (prototype)
 
 By default, the backend allows only:
-
 - `127.0.0.1`
 - `::1`
 
@@ -77,7 +124,7 @@ node .\display\backend.js
 
 ## Notes / next steps
 
-- Real implementation uses **Redis locks** for concurrency and **signed URLs** to stream PDF/ePub from object storage.
-- Real search uses **Elasticsearch/Solr** with metadata + full text indexing.
-- Personalization features (bookmarks, saved searches) are out-of-scope for this 3-file prototype.
+- Real implementation uses **Redis locks** for concurrency and signed URLs to stream PDF/ePub from object storage.
+- Real search uses **Elasticsearch/Solr** with metadata + full-text indexing.
+- Personalization features are out-of-scope for this 3-file prototype.
 
